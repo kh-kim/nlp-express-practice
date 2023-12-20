@@ -89,6 +89,10 @@ BERT를 활용하여 텍스트 분류(예: 감성분석)를 수행하는 프로�
 
 ![](assets/13.png)
 
+NSMC 데이터셋에 대한 각종 한국어 BERT 모델들의 Validation Accuracy 비교
+
+![](assets/nsmc_bert_valid_accuracy.png)
+
 ### Contact
 
 Author: Kim, Ki Hyun
