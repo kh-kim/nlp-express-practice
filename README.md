@@ -59,6 +59,7 @@
 |Huggingface Transformers|transformers==4.36.1|
 |Huggingface Tokenizers|tokenizers==0.15.0|
 |Huggingface Datasets|datasets==2.15.0|
+|Huggingface Accelerate|accelerate==0.25.0|
 |WandB|wandb==0.16.1|
 
 자세한 내용은 requirements.txt 또는 environment.yaml 을 참고/활용 부탁드립니다.
