@@ -2,3 +2,4 @@
 wandb
 *.pyc
 *.pt
+checkpoints
