@@ -11,7 +11,7 @@ python train.py \
     --data_dir_path ${DATA_DIR_PATH} \
     --src_lang ${SRC_LANG} \
     --tgt_lang ${TGT_LANG} \
-    --num_train_epochs 50 \
+    --num_train_epochs 30 \
     --batch_size_per_device 64 \
     --gradient_accumulation_steps 8 \
     --fp16
