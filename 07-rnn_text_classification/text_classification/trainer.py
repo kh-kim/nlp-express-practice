@@ -62,10 +62,11 @@ class Trainer:
 
             print(f"Epoch {epoch_idx + 1} | Train Loss: {train_loss:.3f} | Valid Loss: {valid_loss:.3f}")
 
-            wandb.log({
-                "train/loss": train_loss,
-                "eval/loss": valid_loss,
-            })
+            if not self.config.skip_wandb:
+                wandb.log({
+                    "train/loss": train_loss,
+                    "eval/loss": valid_loss,
+                })
 
             # Save best model, if best_valid_loss is updated
             if valid_loss < best_valid_loss:
@@ -118,7 +119,8 @@ class Trainer:
         print(f"Test Accuracy: {total_correct_cnt / total_sample_cnt * 100:.2f}%")
         print(f"Correct / Total: {total_correct_cnt} / {total_sample_cnt}")
 
-        wandb.log({
-            "test/loss": epoch_loss / len(test_loader),
-            "test/accuracy": total_correct_cnt / total_sample_cnt * 100,
-        })
+        if not self.config.skip_wandb:
+            wandb.log({
+                "test/loss": epoch_loss / len(test_loader),
+                "test/accuracy": total_correct_cnt / total_sample_cnt * 100,
+            })

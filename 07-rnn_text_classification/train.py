@@ -43,6 +43,8 @@ def define_config():
 
     p.add_argument("--max_length", type=int, default=256)
 
+    p.add_argument("--skip_wandb", action="store_true")
+
     config = p.parse_args()
 
     return config
@@ -65,6 +67,9 @@ def get_device(config):
 
 def wandb_init(config):
     final_model_name = f"{config.model_name}-{get_now()}"
+
+    if config.skip_wandb:
+        return final_model_name
 
     wandb.login()
     wandb.init(
@@ -146,7 +151,8 @@ def main(config):
         )
         trainer.test(test_loader)
 
-    wandb.finish()
+    if not config.skip_wandb:
+        wandb.finish()
 
 if __name__ == "__main__":
     config = define_config()

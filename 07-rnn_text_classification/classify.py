@@ -57,6 +57,7 @@ def main(config):
 
         x = tokenizer(
             line,
+            padding=True,
             truncation=True,
             max_length=train_config.max_length,
             return_tensors="pt",
