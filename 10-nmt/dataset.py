@@ -40,14 +40,14 @@ class TranslationCollator():
             max_length=self.max_length,
             return_tensors="pt",
         )
-        labels = decoder_labels["input_ids"][:, 1:]
+        labels = decoder_labels["input_ids"]
         labels[labels == self.tokenizer.pad_token_id] = -100
 
         return {
             "input_ids": encoder_input["input_ids"],
             "attention_mask": encoder_input["attention_mask"],
             "decoder_input_ids": decoder_input["input_ids"][:, :-1],
-            "labels": labels,
+            "labels": labels[:, 1:],
         }
 
 

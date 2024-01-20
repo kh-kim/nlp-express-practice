@@ -49,6 +49,8 @@ def get_config():
 
     p.add_argument("--max_length", type=int, default=256)
 
+    p.add_argument("--skip_wandb", action="store_true")
+
     config = p.parse_args()
 
     return config
@@ -60,6 +62,9 @@ def get_now():
 
 def wandb_init(config):
     final_model_name = f"{config.model_name}-{get_now()}"
+
+    if config.skip_wandb:
+        return final_model_name
 
     wandb.login()
     wandb.init(
@@ -111,11 +116,11 @@ def main(config):
         save_strategy="steps",
         save_steps=save_steps,
         save_total_limit=config.save_total_limit,
-        fp16=config.fp16,
-        fp16_full_eval=config.fp16,
+        bf16=config.fp16,
+        bf16_full_eval=config.fp16,
         half_precision_backend=config.amp_backend,
         load_best_model_at_end=True,
-        report_to="wandb",
+        report_to="wandb" if not config.skip_wandb else None,
         run_name=final_model_name,
     )
 
@@ -179,12 +184,13 @@ def main(config):
         print(f"Test Accuracy: {total_correct_cnt / total_sample_cnt * 100:.2f}%")
         print(f"Correct / Total: {total_correct_cnt} / {total_sample_cnt}")
 
-        wandb.log({
-            "test/accuracy": total_correct_cnt / total_sample_cnt * 100,
-        })
+        if not config.skip_wandb:
+            wandb.log({
+                "test/accuracy": total_correct_cnt / total_sample_cnt * 100,
+            })
 
-
-    wandb.finish()
+    if not config.skip_wandb:
+        wandb.finish()
 
 
 if __name__ == "__main__":

@@ -3,7 +3,7 @@ BACKBONE=$1 # e.g. "klue/roberta-base"
 # replace / with _ in BACKBONE
 MODEL_NAME="nsmc-${BACKBONE//\//-}"
 TRAIN_TSV_FN="./data/ratings_train.tsv"
-VALID_TSV_FN="./data/ratings_test.tsv"
+VALID_TSV_FN="./data/ratings_valid.tsv"
 TEST_TSV_FN="./data/ratings_test.tsv"
 
 python finetune.py \
