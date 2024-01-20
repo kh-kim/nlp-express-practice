@@ -14,7 +14,7 @@ def argparser():
     p = argparse.ArgumentParser()
 
     p.add_argument("--model_name", type=str, required=True)
-    p.add_argument("--tokenizer_name", type=str, required=True)
+    p.add_argument("--tokenizer_name", type=str, default=None)
     p.add_argument("--gpu_id", type=int, default=0 if torch.cuda.is_available() else -1)
 
     p.add_argument("--checkpoint_base_dir", type=str, default="./checkpoints/")
@@ -33,20 +33,22 @@ def argparser():
     return config
 
 
-def load_checkpoint(model_name, checkpoint_base_dir):
+def get_lastest_checkpoint_dir(model_name, checkpoint_base_dir):
     checkpoints = os.listdir(os.path.join(checkpoint_base_dir, model_name))
     iteration_num = max([int(checkpoint.split("-")[1]) for checkpoint in checkpoints if "-" in checkpoint])
-    sys.stderr.write(f"Iteration number: {iteration_num}\n")
 
     checkpoint_dir = os.path.join(checkpoint_base_dir, model_name, f"checkpoint-{iteration_num}")
-    model = T5ForConditionalGeneration.from_pretrained(checkpoint_dir)
 
-    return model
+    return checkpoint_dir
 
 
 def get_tokenizer(tokenizer_name, tokenizer_base_dir):
-    tokenizer_path = os.path.join(tokenizer_base_dir, tokenizer_name)
-    tokenizer = T5TokenizerFast.from_pretrained(tokenizer_path)
+    try:
+        tokenizer_path = os.path.join(tokenizer_base_dir, tokenizer_name)
+        tokenizer = T5TokenizerFast.from_pretrained(tokenizer_path)
+    except:
+        tokenizer_path = get_lastest_checkpoint_dir(tokenizer_name, tokenizer_base_dir)
+        tokenizer = T5TokenizerFast.from_pretrained(tokenizer_path)
 
     tokenizer.pad_token = "<pad>"
     tokenizer.pad_token_id = tokenizer.convert_tokens_to_ids(tokenizer.pad_token)
@@ -63,8 +65,13 @@ def get_tokenizer(tokenizer_name, tokenizer_base_dir):
 if __name__ == "__main__":
     config = argparser()
 
-    model = load_checkpoint(config.model_name, config.checkpoint_base_dir)
-    tokenizer = get_tokenizer(config.tokenizer_name, config.tokenizer_base_dir)
+    model = T5ForConditionalGeneration.from_pretrained(
+        get_lastest_checkpoint_dir(config.model_name, config.checkpoint_base_dir)
+    )
+    if config.tokenizer_name is None:
+        tokenizer = get_tokenizer(config.model_name, config.checkpoint_base_dir)
+    else:
+        tokenizer = get_tokenizer(config.tokenizer_name, config.tokenizer_base_dir)
 
     if config.gpu_id >= 0:
         device = torch.device(f"cuda:{config.gpu_id}")

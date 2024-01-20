@@ -27,10 +27,11 @@ def get_config():
 
     p.add_argument("--src_lang", type=str, required=True, choices=["ko", "en"])
     p.add_argument("--tgt_lang", type=str, required=True, choices=["ko", "en"])
-    p.add_argument("--max_length", type=int, default=128)
+    p.add_argument("--max_length", type=int, default=192)
 
     p.add_argument("--num_train_epochs", type=int, default=2)
     p.add_argument("--learning_rate", type=float, default=2e-5)
+    p.add_argument("--max_grad_norm", type=float, default=1.0)
     p.add_argument("--warmup_ratio", type=float, default=0.0001)
     p.add_argument("--min_warmup_steps", type=int, default=1000)
     p.add_argument("--weight_decay", type=float, default=0.01)
@@ -49,6 +50,9 @@ def get_config():
     p.add_argument("--pad_token", type=str, default="<pad>")
     p.add_argument("--bos_token", type=str, default="<s>")
     p.add_argument("--eos_token", type=str, default="</s>")
+
+
+    p.add_argument("--skip_wandb", action="store_true")
     
     config = p.parse_args()
 
@@ -61,6 +65,9 @@ def get_now():
 
 def wandb_init(config):
     final_model_name = f"{config.model_name}-{get_now()}"
+
+    if config.skip_wandb:
+        return final_model_name
 
     wandb.login()
     wandb.init(
@@ -131,6 +138,7 @@ def main(config):
         eval_accumulation_steps=1,
         learning_rate=config.learning_rate,
         weight_decay=config.weight_decay,
+        max_grad_norm=config.max_grad_norm,
         num_train_epochs=config.num_train_epochs,
         lr_scheduler_type=config.lr_scheduler_type,
         warmup_steps=warmup_steps,
@@ -139,13 +147,14 @@ def main(config):
         save_strategy="steps",
         save_steps=save_steps,
         save_total_limit=config.save_total_limit,
-        fp16=config.fp16,
-        fp16_full_eval=config.fp16,
+        bf16=config.fp16,
+        bf16_full_eval=config.fp16,
         half_precision_backend=config.amp_backend,
         eval_steps=eval_steps,
         load_best_model_at_end=True,
-        report_to="wandb",
+        report_to="wandb" if not config.skip_wandb else None,
         run_name=final_model_name,
+        ddp_find_unused_parameters=False,
     )
 
     print(">>> Training arguments:")
@@ -165,7 +174,8 @@ def main(config):
 
     trainer.train()
 
-    wandb.finish()
+    if not config.skip_wandb:
+        wandb.finish()
 
 
 if __name__ == "__main__":
